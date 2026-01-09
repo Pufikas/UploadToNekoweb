@@ -7,7 +7,7 @@ let { APIKEY, DOMAIN, USERNAME, DIRECTORY } = process.env;
 const srcDir = path.resolve("..", DIRECTORY);
 
 form.append("pathname", `/${DIRECTORY}`);
-form.append("files", filename, { filepath: srcDir });
+form.append("files", "test.txt", { filepath: srcDir });
 
 let options = {
     method: "POST",
