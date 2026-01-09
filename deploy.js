@@ -1,4 +1,3 @@
-const fetch = require("node-fetch");
 const FormData = require("form-data");
 let url = "https://nekoweb.org/api/files/upload";
 const form = new FormData();
