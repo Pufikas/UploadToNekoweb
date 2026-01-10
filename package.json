@@ -1,7 +1,8 @@
 {
   "dependencies": {
     "form-data": "^4.0.5",
-    "fs": "^0.0.1-security"
+    "fs": "^0.0.1-security",
+    "jszip": "^3.10.1"
   },
   "scripts": {
     "deploy": "node deploy.js"

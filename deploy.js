@@ -1,48 +1,63 @@
-const FormData = require("form-data");
-const path = require("path");
+const JSZip = require("jszip");
+
 const fs = require("fs");
-const url = "https://nekoweb.org/api/files/upload";
-const form = new FormData();
+const fsp = require("fs/promises");
+const path = require("path");
+
 const { APIKEY, DOMAIN, USERNAME, DIRECTORY } = process.env;
+const url = "https://nekoweb.org/api/files/upload";
 
-const srcDir = path.resolve("..", DIRECTORY);
+async function zipDirectory(inputDir, outputZipPath) {
+	const zip = new JSZip();
+	const rootDir = path.basename(inputDir);
 
-function getAllFiles(dir, files = []) {
-    for (const file of fs.readdirSync(dir)) {
-        const fullPath = path.join(dir, file);
-        const stat = fs.statSync(fullPath);
+	async function addFiles(dir, zipDir) {
+	const entries = await fsp.readdir(dir, { withFileTypes: true });
 
-        if (stat.isDirectory()) {
-            getAllFiles(fullPath, files);
-        } else {
-            files.push(fullPath);
-        }
-    }
-    return files;
-}
+	for (const entry of entries) {
+			const full = path.join(dir, entry.name);
+			const zipPath = path.join(zipDir, entry.name);
 
-const files = getAllFiles(srcDir);
+			if (entry.isDirectory()) {
+				await addFiles(full, zipPath);
+			} else {
+				zip.file(zipPath, await fsp.readFile(full));
+			}
+		}
+	}
 
-form.append("pathname", `/${DIRECTORY}`);
+		await addFiles(inputDir, rootDir);
+		const buf = await zip.generateAsync({ type: "nodebuffer" });
+		await fsp.writeFile(outputZipPath, buf);
+	}
 
-for (const filePath of files) {
-    const relative = path.relative(srcDir, filePath);
-    form.append("files", fs.createReadStream(filePath), {
-        filename: relative
-    });
-}
+(async () => {
+	const inputDir = path.join(process.cwd(), DIRECTORY);
+	const zipPath = path.join(__dirname, "deploy.zip");
 
-let options = {
-    method: "POST",
-    headers: {
-        Authorization: APIKEY,
-        ...form.getHeaders()
-    }
-};
+	await zipDirectory(inputDir, zipPath);
 
-options.body = form;
 
-fetch(url, options)
-    .then(res => res)
-    .then(json => console.log(json))
-    .catch(err => console.error("err: ", err));
+	const form = new FormData();
+
+	form.append("pathname", "/");
+
+	form.append(
+		"files",
+		new Blob([fs.readFileSync(zipPath)], { type: "application/zip" }),
+		"deploy.zip"
+	);
+
+	const res = await fetch(url, {
+		method: "POST",
+		headers: {
+			Authorization: APIKEY
+		},
+		body: form
+	});
+
+	console.log("zip size: ", fs.statSync(zipPath).size);
+	console.log("res: ", res.status);
+	console.log(await res.text());
+
+})();
