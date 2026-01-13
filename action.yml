@@ -22,7 +22,8 @@ runs:
       shell: bash
 
     - name: Clone website repo into site/
-      run: git clone https://github.com/${{ github.repository }} site
+      working-directory: deploytonekoweb
+      run: git clone --depth 1 https://github.com/${{ github.repository }} site
       shell: bash
 
     - name: Install Dependencies
