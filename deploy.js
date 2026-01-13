@@ -68,7 +68,7 @@ async function getZipId() {
 	return json.id;
 }
 
-async function appendZip() {
+async function appendZip(id, filePath) {
 	const form = new FormData();
 	form.append("id", id);
 	form.append(
