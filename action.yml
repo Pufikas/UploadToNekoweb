@@ -10,9 +10,6 @@ inputs:
   nekoweb-username:
     description: "Your NekoWeb username."
     required: true
-  directory:
-    description: "Which directory to upload?"
-    required: true
 
 runs:
   using: "composite"
@@ -22,6 +19,10 @@ runs:
 
     - name: Download Deployment Script
       run: git clone --depth 1 https://github.com/Pufikas/deploytonekoweb.git
+      shell: bash
+
+    - name: Clone website repo into site/
+      run: git clone https://github.com/${{ github.repository }} site
       shell: bash
 
     - name: Install Dependencies
@@ -35,6 +36,5 @@ runs:
           APIKEY: ${{ inputs.nekoweb-api-key }}
           DOMAIN: ${{ inputs.nekoweb-domain }}
           USERNAME: ${{ inputs.nekoweb-username }}
-          DIRECTORY: ${{ inputs.directory }}
       run: npm run deploy
       shell: bash
