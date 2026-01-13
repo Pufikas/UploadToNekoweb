@@ -9,7 +9,7 @@ const url = "https://nekoweb.org/api/files/upload";
 
 async function zipDirectory(inputDir, outputZipPath) {
 	const zip = new JSZip();
-	const rootDir = path.basename(inputDir);
+	const rootDir = path.basename(DOMAIN);
 
 	async function addFiles(dir, zipDir) {
 	const entries = await fsp.readdir(dir, { withFileTypes: true });
@@ -32,8 +32,15 @@ async function zipDirectory(inputDir, outputZipPath) {
 	}
 
 (async () => {
-	const inputDir = path.join(process.cwd(), DIRECTORY);
+	const inputDir = path.join(process.env.GITHUB_WORKSPACE, DIRECTORY);
 	const zipPath = path.join(__dirname, "deploy.zip");
+
+	console.log("inputDir: ", inputDir);
+	console.log("zipPath: ", zipPath);
+
+	console.log("github_workspace:", process.env.GITHUB_WORKSPACE);
+	console.log("cwd:", process.cwd());
+
 
 	await zipDirectory(inputDir, zipPath);
 
@@ -55,8 +62,8 @@ async function zipDirectory(inputDir, outputZipPath) {
 		},
 		body: form
 	});
-
-	console.log("zip size: ", fs.statSync(zipPath).size);
+	
+	console.log("zip size: ", (fs.statSync(zipPath).size / 1024 / 1024).toFixed(2), " MB");
 	console.log("res: ", res.status);
 	console.log(await res.text());
 
