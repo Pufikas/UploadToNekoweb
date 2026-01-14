@@ -9,6 +9,7 @@ const API = "https://nekoweb.org/api";
 const SITE_DIR = path.join(process.cwd(), "site");
 const ZIP_PATH = path.join(process.cwd(), "deploy.zip");
 
+// default ignore file list
 const IGNORE = new Set([
 	".git",
 	".github",
@@ -37,7 +38,7 @@ async function zipDirectory(inputDir, outputZipPath) {
 		}
 	}
 	
-	await addFiles(inputDir);
+	await addFiles(inputDir, DOMAIN);
 
 	const buf = await zip.generateAsync({ type: "nodebuffer" });
 	await fsp.writeFile(outputZipPath, buf);
@@ -64,7 +65,7 @@ async function apiFetch(url, options = {}) {
 async function getZipId() {
 	const res = await apiFetch(`${API}/files/big/create`, { method: "GET" });
 	const json = JSON.parse(res);
-	console.log("zip id: ", json.id);
+
 	return json.id;
 }
 
@@ -88,15 +89,14 @@ async function importZip(id) {
 	await zipDirectory(SITE_DIR, ZIP_PATH);
 
 	const sizeMB = (fs.statSync(ZIP_PATH).size / 1024 / 1024).toFixed(2);
-	console.log(`ZIP Size: ${sizeMB} MB`);
+	console.log(`zip size: ${sizeMB} MB`);
 
 	const id = await getZipId();
-	console.log(`ZIP id is: ${id}`);
 
 	await appendZip(id, ZIP_PATH);
 
 	await importZip(id);
-	console.log(`Done for: ${id}`);
+	console.log(`done uploading`);
 })().catch(err => {
 	console.error(`err: ${err}`);
 });
