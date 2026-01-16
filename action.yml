@@ -10,6 +10,10 @@ inputs:
   nekoweb-username:
     description: "Your NekoWeb username."
     required: true
+  ignore-paths:
+    description: "Comma-separated list of folders/files to exclude from ZIP"
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -37,5 +41,6 @@ runs:
           APIKEY: ${{ inputs.nekoweb-api-key }}
           DOMAIN: ${{ inputs.nekoweb-domain }}
           USERNAME: ${{ inputs.nekoweb-username }}
+          IGNORE_PATHS: ${{ inputs.ignore-paths }}
       run: npm run deploy
       shell: bash

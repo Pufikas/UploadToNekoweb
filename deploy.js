@@ -10,13 +10,20 @@ const SITE_DIR = path.join(process.cwd(), "site");
 const ZIP_PATH = path.join(process.cwd(), "deploy.zip");
 
 // default ignore file list
-const IGNORE = new Set([
+const DEFAULT_IGNORE = new Set([
 	".git",
 	".github",
 	"node_modules",
 	"deploytonekoweb",
 	"deploy.zip"
 ]);
+
+const userSpecifiedIgnores = process.env.IGNORE_PATHS
+	?.split(",")
+	.map(p => p.trim())
+	.filter(Boolean) ?? [];
+
+const IGNORE = new Set([...DEFAULT_IGNORE, ...userSpecifiedIgnores]);
 
 async function zipDirectory(inputDir, outputZipPath) {
 	const zip = new JSZip();
